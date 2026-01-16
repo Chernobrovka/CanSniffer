@@ -90,24 +90,24 @@ bash
 can start
 write seq 0x123 01 02 03 04 100 50
 
-🎨 LED Indicators
+## 🎨 LED Indicators
 # LED1 (Red/Green) - System Status
 
-    **OFF**: CAN interface stopped
+    OFF: CAN interface stopped
 
-    **SLOW BLINK**: CAN active, normal operation
+    SLOW BLINK: CAN active, normal operation
 
-    **FAST BLINK**: Error detected
+    FAST BLINK: Error detected
 
-    **ON**: Initialization/Test mode
+    ON: Initialization/Test mode
 
 # LED2 (Blue) - Activity
 
-    Short flash (50ms)**: CAN message transmitted
+    Short flash (50ms): CAN message transmitted
 
-    Short flash (50ms)**: CAN message received
+    Short flash (50ms): CAN message received
 
-    Long flash (100ms)**: USB command received
+    Long flash (100ms): USB command received
 
 🔌 Protocol Support
 # CAN Standards
