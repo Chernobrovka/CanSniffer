@@ -32,13 +32,13 @@ text
 
 
 ### Basic Usage
-1. ##Connect to USB, open terminal (115200 baud)
-2. ##Start CAN monitoring:
+1. ## Connect to USB, open terminal (115200 baud)
+2. ## Start CAN monitoring:
    ```bash
-   ##can start
-   ##read raw
+   ## can start
+   ## read raw
 
-    ##Monitor traffic - messages will stream in real-time
+    ## Monitor traffic - messages will stream in real-time
 
 📖 Command Reference
 # CAN Control
@@ -129,22 +129,22 @@ Parsed format: Detailed message breakdown with ASCII view
 ⚙️ Configuration
 # CAN Settings
 
-    ##Baud rate: Configurable via hardware
+    ## Baud rate: Configurable via hardware
 
-    ##Sampling point: 75% (optimal for automotive)
+    ## Sampling point: 75% (optimal for automotive)
 
-    ##SJW: 1 time quantum
+    ## SJW: 1 time quantum
 
-    ##Filters: 14 hardware filter banks
+    ## Filters: 14 hardware filter banks
 
-#USB Settings
+# USB Settings
 
-    ##Baud rate: 115200
+    ## Baud rate: 115200
 
-    ##Data bits: 8
+    ## Data bits: 8
 
-    ##Stop bits: 1
+    ## Stop bits: 1
 
-    ##Parity: None
+    ## Parity: None
 
-    ##Flow control: None
+    ## Flow control: None
