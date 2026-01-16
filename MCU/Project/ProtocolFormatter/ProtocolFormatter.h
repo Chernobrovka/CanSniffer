@@ -2,7 +2,7 @@
  * ProtocolFormatter.h
  *
  *  Created on: Dec 29, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef PROTOCOLFORMATTER_PROTOCOLFORMATTER_H_

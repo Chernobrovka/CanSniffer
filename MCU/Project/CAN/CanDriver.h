@@ -2,7 +2,7 @@
  * CanDriver.h
  *
  *  Created on: Dec 22, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef CAN_CANDRIVER_H_

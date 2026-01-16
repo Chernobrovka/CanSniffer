@@ -2,7 +2,7 @@
  * CanBusMonitor.h
  *
  *  Created on: 14 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 #ifndef CANBUSMONITOR_CANBUSMONITOR_H_
 #define CANBUSMONITOR_CANBUSMONITOR_H_

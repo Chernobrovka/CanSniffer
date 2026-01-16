@@ -2,7 +2,7 @@
  * App.c
  *
  *  Created on: Dec 22, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 #include "App.hpp"
 #include "LogPrint/LogPrint.h"

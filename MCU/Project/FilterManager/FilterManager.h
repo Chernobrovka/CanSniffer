@@ -2,7 +2,7 @@
  * FilterManager.h
  *
  *  Created on: 13 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef FILTERMANAGER_FILTERMANAGER_H_

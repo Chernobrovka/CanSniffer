@@ -2,7 +2,7 @@
  * LED.cpp
  *
  *  Created on: 15 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #include "LED.h"

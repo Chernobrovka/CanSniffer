@@ -2,7 +2,7 @@
  * CanDriver.cpp
  *
  *  Created on: Dec 22, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 #include "App.hpp"
 #include "CanDriver.h"

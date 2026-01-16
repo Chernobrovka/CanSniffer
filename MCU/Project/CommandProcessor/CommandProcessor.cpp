@@ -2,7 +2,7 @@
  * CommandProcessor.cpp
  *
  *  Created on: Dec 30, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 #include "CommandProcessor.h"
 #include "CommandHandler/CommandHandler.h"

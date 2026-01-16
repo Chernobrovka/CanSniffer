@@ -2,7 +2,7 @@
  * CanBusLoadCalculator.h
  *
  *  Created on: 14 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef CANBUSLOADCALCULATOR_CANBUSLOADCALCULATOR_H_

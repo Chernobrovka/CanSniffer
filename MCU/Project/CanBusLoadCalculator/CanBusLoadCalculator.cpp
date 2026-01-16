@@ -2,7 +2,7 @@
  * CanBusLoadCalculator.cpp
  *
  *  Created on: 14 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #include "CanBusLoadCalculator.h"

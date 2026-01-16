@@ -2,7 +2,7 @@
  * SequenceManager.h
  *
  *  Created on: 12 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef SEQUENCEMANAGER_SEQUENCEMANAGER_H_

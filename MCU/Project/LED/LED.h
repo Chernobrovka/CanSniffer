@@ -2,7 +2,7 @@
  * LED.h
  *
  *  Created on: 15 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef LED_LED_H_

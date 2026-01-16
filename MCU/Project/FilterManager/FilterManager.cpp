@@ -2,7 +2,7 @@
  * FilterManager.cpp
  *
  *  Created on: 13 янв. 2026 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 #include "FilterManager.h"
 #include <cstdio>

@@ -2,7 +2,7 @@
  * CanProcessor.cpp
  *
  *  Created on: 23 дек. 2025 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 #include "CanProcessor.h"
 

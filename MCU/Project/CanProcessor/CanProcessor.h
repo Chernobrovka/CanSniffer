@@ -2,7 +2,7 @@
  * CanProcessor.h
  *
  *  Created on: 23 дек. 2025 г.
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef CANPROCESSOR_CANPROCESSOR_H_

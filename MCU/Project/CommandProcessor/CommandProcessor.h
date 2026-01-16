@@ -2,7 +2,7 @@
  * CommandProcessor.h
  *
  *  Created on: Dec 30, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef COMMANDPROCESSOR_COMMANDPROCESSOR_H_

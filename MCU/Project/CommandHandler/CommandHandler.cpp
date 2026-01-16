@@ -2,7 +2,7 @@
  * CommandHandler.cpp
  *
  *  Created on: Dec 30, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 #include "CommandHandler.h"
 #include "COBSLib/cobs.h"

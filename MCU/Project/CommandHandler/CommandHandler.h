@@ -2,7 +2,7 @@
  * CommandHandler.h
  *
  *  Created on: Dec 30, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef COMMANDHANDLER_COMMANDHANDLER_H_

@@ -2,7 +2,7 @@
  * App.h
  *
  *  Created on: Dec 22, 2025
- *      Author: peleng
+ *      Author: Dmitry
  */
 
 #ifndef APP_HPP_
