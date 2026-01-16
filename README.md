@@ -93,13 +93,13 @@ write seq 0x123 01 02 03 04 100 50
 🎨 LED Indicators
 # LED1 (Red/Green) - System Status
 
-    OFF**: CAN interface stopped
+    **OFF**: CAN interface stopped
 
-    SLOW BLINK**: CAN active, normal operation
+    **SLOW BLINK**: CAN active, normal operation
 
-    FAST BLINK**: Error detected
+    **FAST BLINK**: Error detected
 
-    ON**: Initialization/Test mode
+    **ON**: Initialization/Test mode
 
 # LED2 (Blue) - Activity
 
@@ -129,22 +129,22 @@ Parsed format: Detailed message breakdown with ASCII view
 ⚙️ Configuration
 # CAN Settings
 
-    ## Baud rate: Configurable via hardware
+    Baud rate: Configurable via hardware
 
-    ## Sampling point: 75% (optimal for automotive)
+    Sampling point: 75% (optimal for automotive)
 
-    ## SJW: 1 time quantum
+    SJW: 1 time quantum
 
-    ## Filters: 14 hardware filter banks
+    Filters: 14 hardware filter banks
 
 # USB Settings
 
-    ## Baud rate: 115200
+    Baud rate: 115200
 
-    ## Data bits: 8
+    Data bits: 8
 
-    ## Stop bits: 1
+    Stop bits: 1
 
-    ## Parity: None
+    Parity: None
 
-    ## Flow control: None
+    Flow control: None
