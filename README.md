@@ -2,16 +2,16 @@
 
 ## 📋 Overview
 
-## **CAN Sniffer** is a professional-grade embedded tool for real-time monitoring, analysis, and injection of CAN (Controller Area Network) bus traffic. Built on STM32 microcontroller, this tool provides comprehensive CAN bus analysis capabilities through a user-friendly USB CLI interface.
+**CAN Sniffer** is a professional-grade embedded tool for real-time monitoring, analysis, and injection of CAN (Controller Area Network) bus traffic. Built on STM32 microcontroller, this tool provides comprehensive CAN bus analysis capabilities through a user-friendly USB CLI interface.
 
 ## ✨ Features
 
 ### 🎯 **Core Functionality**
-- ## **Real-time Monitoring** - Capture and display CAN traffic in real-time
-- ## **Bi-directional Communication** - Both receive and transmit CAN messages
-- ## **Smart Filtering** - Hardware-accelerated ID-based filtering
-- ## **Multiple Output Formats** - Raw hex and parsed human-readable formats
-- ## **Bus Load Analysis** - Monitor CAN bus utilization in real-time
+- **Real-time Monitoring** - Capture and display CAN traffic in real-time
+- **Bi-directional Communication** - Both receive and transmit CAN messages
+- **Smart Filtering** - Hardware-accelerated ID-based filtering
+- **Multiple Output Formats** - Raw hex and parsed human-readable formats
+- **Bus Load Analysis** - Monitor CAN bus utilization in real-time
 
 ### 🔧 **Technical Specifications**
 - **##**MCU**: STM32F407VET6 (ARM Cortex-M4 @ 64MHz)
@@ -25,20 +25,20 @@
 
 ### Hardware Connection
 
-## CAN_H ───► Vehicle/Device CAN High
-## CAN_L ───► Vehicle/Device CAN Low
-## USB ───► Computer for CLI interface
+CAN_H ───► Vehicle/Device CAN High
+CAN_L ───► Vehicle/Device CAN Low
+USB ───► Computer for CLI interface
 text
 
 
 ### Basic Usage
-1. ## Connect to USB, open terminal (115200 baud)
-2. ## Start CAN monitoring:
+1. Connect to USB, open terminal (115200 baud)
+2. Start CAN monitoring:
    ```bash
-   ## can start
-   ## read raw
+   can start
+   read raw
 
-    ## Monitor traffic - messages will stream in real-time
+   Monitor traffic - messages will stream in real-time
 
 📖 Command Reference
 # CAN Control
