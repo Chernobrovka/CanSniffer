@@ -14,7 +14,7 @@
 #include "CanBusMonitor/CanBusMonitor.h"
 #include "LED/LED.h"
 
-#define CAN_MSSG_QUEUE_SIZE 100
+#define CAN_MSSG_QUEUE_SIZE 2048
 
 typedef struct {
     uint32_t timestamp_ms;
@@ -56,7 +56,10 @@ private:
     State state_;
     uint32_t processed_count_;
     uint32_t error_count_;
+
+    uint8_t queue_buffer_[CAN_MSSG_QUEUE_SIZE * sizeof(CanMessage_t)];
     Queue_t *queue_;
+
     usbOutputCallback usb_callback_;
     CanBusMonitor *bus_monitor_;
     Led *led_;

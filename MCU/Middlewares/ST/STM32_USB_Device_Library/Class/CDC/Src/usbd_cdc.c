@@ -225,6 +225,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_E
   0x00,                                       /* bMasterInterface: Communication class interface */
   0x01,                                       /* bSlaveInterface0: Data Class Interface */
 
+
   /* Endpoint 2 Descriptor */
   0x07,                                       /* bLength: Endpoint Descriptor size */
   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
@@ -233,6 +234,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_CfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_E
   LOBYTE(CDC_CMD_PACKET_SIZE),                /* wMaxPacketSize */
   HIBYTE(CDC_CMD_PACKET_SIZE),
   CDC_FS_BINTERVAL,                           /* bInterval */
+
   /*---------------------------------------------------------------------------*/
 
   /* Data class interface descriptor */

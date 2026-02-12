@@ -32,7 +32,7 @@ public:
     void update(uint32_t current_time_ms) {
         if (!monitoring_enabled_) return;
 
-        if (current_time_ms - last_print_time_ >= 1000) {
+        if (current_time_ms - last_print_time_ >= 50) {
             CanBusLoadCalculator::BusLoadResult result =
                 load_calculator_.calculateLoad(current_time_ms);
 
@@ -66,10 +66,10 @@ private:
         snprintf(buffer, sizeof(buffer),
                 "\r\n=== CAN Bus Load ===\r\n"
                 "Load:        %.1f%%\r\n"
-                "Actual rate: %u bps\r\n"
-                "Messages:    %u in last second\r\n"
-                "Bits:        %u / %u max\r\n"
-                "Time:        %u ms\r\n"
+                "Actual rate: %lu bps\r\n"
+                "Messages:    %lu in last second\r\n"
+                "Bits:        %lu / %lu max\r\n"
+                "Time:        %lu ms\r\n"
                 "=====================\r\n",
                 result.load_percentage,
                 result.bitrate_actual,

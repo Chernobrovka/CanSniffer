@@ -76,15 +76,10 @@ public:
 
     static constexpr uint16_t BUFFER_SIZE = 256;
     static constexpr uint16_t COMMAND_SIZE = 30;
-    static constexpr uint16_t QUEUE_SIZE = 100;
+    static constexpr uint16_t QUEUE_SIZE = 256;
 
     static constexpr uint8_t TOKEN_SIZE = 32;
     static constexpr uint8_t MAX_TOKENS = 10;
-
-/*    struct Command {
-        uint8_t data[COMMAND_SIZE];
-        uint8_t size;
-    };*/
 
     enum class Result {
         OK,
@@ -96,7 +91,7 @@ public:
     };
 
     CommandHandler(Queue_t *queue_ptr);
-    ~CommandHandler() = default;
+    ~CommandHandler();
 
     Result processByte(uint8_t byte);
     Result processBuffer(const uint8_t* buffer, uint16_t length);
@@ -122,6 +117,7 @@ private:
 
     void clearBuffer();
 
+    uint8_t queue_data_buffer_[QUEUE_SIZE * sizeof(Command)];
     uint8_t rx_buffer_[BUFFER_SIZE];
     volatile uint16_t cursor_;
 

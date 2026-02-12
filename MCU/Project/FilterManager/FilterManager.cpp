@@ -16,7 +16,7 @@ FilterManager::FilterManager(PrintCallback print_cb,
 	  print_callback_(print_cb),
 	  config_filter_callback_(config_filter_cb),
 	  disable_filter_callback_(disable_filter_cb),
-	  disable_all_filters_callback_(disable_all_filters_callback_){
+	  disable_all_filters_callback_(disable_all_filters_cb){
     // Инициализация всех банков
     for (auto& bank : banks_) {
         bank.is_used = false;
@@ -34,8 +34,7 @@ bool FilterManager::addFilter(uint32_t id, uint32_t mask, FilterType type) {
     if (!isValidMask(mask, type)) return false;
 
     if (filterExists(id)) {
-        print_callback_("ERROR: Filter with ID 0x%08lX already exists\r\n", id);
-        return false;
+    	removeFilter(id);
     }
 
     if (active_filter_count_ >= MAX_FILTERS) {
@@ -168,7 +167,7 @@ size_t FilterManager::getActiveFilters(FilterInfo* buffer, size_t buffer_size) c
 
 void FilterManager::printFilterList() const {
     print_callback_("\r\n=== Active Filters ===\r\n");
-    print_callback_("Total: %zu/%zu filters, %zu/%zu banks used\r\n",
+    print_callback_("Total: %u/%u filters, %u/%u banks used\r\n",
            active_filter_count_, MAX_FILTERS,
            used_bank_count_, MAX_BANKS);
     print_callback_("--------------------------------\r\n");

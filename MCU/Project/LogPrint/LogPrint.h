@@ -2,7 +2,7 @@
  * LogPrint.h
  *
  *  Created on: Dec 2, 2025
- *      Author: gadzilla
+ *      Author: Dmitry
  */
 
 #ifndef LOGPRINT_LOGPRINT_H_

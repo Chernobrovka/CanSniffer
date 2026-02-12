@@ -111,7 +111,8 @@ private:
         uint8_t used_slots;
 
         Bank() : is_used(false), used_slots(0) {
-            memset(filters, 0, sizeof(filters));
+            filters[0] = FilterInfo{};
+            filters[1] = FilterInfo{};
         }
 
         bool hasFreeSlot() const { return used_slots < 2; }

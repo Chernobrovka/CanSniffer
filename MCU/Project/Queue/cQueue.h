@@ -7,6 +7,8 @@
 **
 **      https://github.com/SMFSW/cQueue
 **
+** My revision of library for MCU without dinamic memmory allocation
+**
 **/
 /****************************************************************/
 #ifndef __CQUEUE_H
@@ -23,12 +25,24 @@ extern "C" {
 
 #define QUEUE_INITIALIZED	0x5AA5							//!< Queue initialized control value
 
-#define q_init_def(q, sz)	q_init(q, sz, 20, FIFO, false)	//!< Some kind of average default for queue initialization
+#define Q_STATIC_INIT(name, type, size_rec, nb_recs, overwrite) \
+    static uint8_t name##_buffer[(size_rec) * (nb_recs)]; \
+    Queue_t name = { \
+        .impl = type, \
+        .ovw = overwrite, \
+        .rec_nb = nb_recs, \
+        .rec_sz = size_rec, \
+        .queue_sz = (size_rec) * (nb_recs), \
+        .queue = name##_buffer, \
+        .in = 0, \
+        .out = 0, \
+        .cnt = 0, \
+        .init = QUEUE_INITIALIZED, \
+        .is_static = true \
+    }
 
-#define q_pull				q_pop							//!< \deprecated q_pull was already used in cQueue lib, alias is made to keep compatibility with earlier versions
-#define q_nbRecs			q_getCount						//!< \deprecated q_nbRecs was already used in cQueue lib, alias is made to keep compatibility with earlier versions
-#define q_clean				q_flush							//!< \deprecated q_clean was already used in cQueue lib, alias is made to keep compatibility with earlier versions
-
+#define Q_STATIC_INIT_DEF(name, size_rec, nb_recs) \
+    Q_STATIC_INIT(name, FIFO, size_rec, nb_recs, false)
 
 /*!\enum enumQueueType
 ** \brief Queue behavior enumeration (FIFO, LIFO)
@@ -54,6 +68,7 @@ typedef struct Queue_t {
 	uint16_t	out;		//!< number of records pulled from the queue (only for FIFO)
 	uint16_t	cnt;		//!< number of records not retrieved from the queue
 	uint16_t	init;		//!< set to QUEUE_INITIALIZED after successful init of the queue and reset when killing queue
+	bool        is_static;
 } Queue_t;
 
 
@@ -70,6 +85,12 @@ void * __attribute__((nonnull)) q_init(Queue_t * const q, const uint16_t size_re
 /*!	\brief Queue destructor: release dynamically allocated queue
 **	\param [in,out] q - pointer of queue to handle
 **/
+
+/*! \brief Initialize with static buffer */
+void q_init_static(Queue_t * const q, uint8_t * const buffer,
+                   const uint16_t size_rec, const uint16_t nb_recs,
+                   const QueueType type, const bool overwrite);
+
 void __attribute__((nonnull)) q_kill(Queue_t * const q);
 
 /*!	\brief Flush queue, restarting from empty queue

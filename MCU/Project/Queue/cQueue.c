@@ -42,8 +42,25 @@ static inline void __attribute__((nonnull, always_inline)) dec_idx(uint16_t * co
 }
 
 
+void q_init_static(Queue_t * const q, uint8_t * const buffer,
+                   const uint16_t size_rec, const uint16_t nb_recs,
+                   const QueueType type, const bool overwrite) {
+
+    q->impl = type;
+    q->ovw = overwrite;
+    q->rec_nb = nb_recs;
+    q->rec_sz = size_rec;
+    q->queue_sz = (uint32_t)size_rec * nb_recs;
+    q->queue = buffer;
+    q->is_static = true;
+
+    q_flush(q);
+    q->init = QUEUE_INITIALIZED;
+}
+
 void * __attribute__((nonnull)) q_init(Queue_t * const q, const uint16_t size_rec, const uint16_t nb_recs, const QueueType type, const bool overwrite)
 {
+	q->is_static = false;
 	const uint32_t size = nb_recs * size_rec;
 
 	q->rec_nb = nb_recs;
@@ -65,8 +82,12 @@ void * __attribute__((nonnull)) q_init(Queue_t * const q, const uint16_t size_re
 
 void __attribute__((nonnull)) q_kill(Queue_t * const q)
 {
-	if (q->init == QUEUE_INITIALIZED)	{ free(q->queue); }	// Free existing data (if already initialized)
-	q->init = 0;
+    if (q->init == QUEUE_INITIALIZED && !q->is_static) {
+        free(q->queue);
+    }
+    q->init = 0;
+    q->queue = NULL;
+    q->queue_sz = 0;
 }
 
 

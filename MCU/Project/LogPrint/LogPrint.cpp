@@ -3,7 +3,7 @@
  * LogPrint.c
  *
  *  Created on: Dec 2, 2025
- *      Author: gadzilla
+ *      Author: Dmitry
  */
 #ifdef DEBUG
 #include "LogPrint.h"

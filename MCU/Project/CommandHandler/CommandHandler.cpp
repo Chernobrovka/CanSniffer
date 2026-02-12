@@ -17,11 +17,20 @@ CommandHandler::CommandHandler(Queue_t *queue_ptr)
       initialized_(false),
 	  command_queue_(queue_ptr){
 
-	q_init(command_queue_, sizeof(Command), QUEUE_SIZE, FIFO, true);
+    q_init_static(command_queue_,
+                  queue_data_buffer_,
+                  sizeof(Command),
+                  QUEUE_SIZE,
+                  FIFO,
+                  true);
 
 	clearBuffer();
 
 	initialized_ = true;
+}
+
+CommandHandler::~CommandHandler() {
+    q_kill(command_queue_);
 }
 
 CommandHandler::Result CommandHandler::processByte(uint8_t byte){
@@ -282,7 +291,6 @@ bool CommandHandler::parseDataBytes(const char* str, uint8_t* data, uint8_t* dlc
     int byte_count = 0;
     char hex[3] = {0};
     int hex_pos = 0;
-    bool last_was_delimiter = false;
 
     while (*str && byte_count < 8) {
         char c = *str++;
@@ -293,11 +301,8 @@ bool CommandHandler::parseDataBytes(const char* str, uint8_t* data, uint8_t* dlc
                 data[byte_count++] = (uint8_t)parseHex(hex);
                 hex_pos = 0;
             }
-            last_was_delimiter = true;
             continue;
         }
-
-        last_was_delimiter = false;
 
         // Проверяем hex символ
         if (!isxdigit(c)) {

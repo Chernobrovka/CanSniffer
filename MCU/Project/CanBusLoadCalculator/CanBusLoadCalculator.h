@@ -17,8 +17,9 @@
 class CanBusLoadCalculator {
 public:
     // Конфигурация
-    static constexpr uint32_t DEFAULT_BAUDRATE = 500000;  // 500 kbps
-    static constexpr uint32_t CALCULATION_WINDOW_MS = 1000;  // Окно расчета 1 секунда
+    static constexpr uint32_t DEFAULT_BAUDRATE = 1000000;
+    static constexpr uint32_t CALCULATION_WINDOW_MS = 50;
+    static constexpr uint32_t STUFFING_FACTOR_PERCENT = 115;
 
     // Результаты расчета нагрузки
     struct BusLoadResult {

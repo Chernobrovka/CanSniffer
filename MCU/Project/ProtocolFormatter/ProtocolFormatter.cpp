@@ -80,9 +80,6 @@ static void setFormatedDatagramIdentifer(uint32_t idNum, uint8_t* pExitBuffer,
 void ProtocolFormatter::formatIdentifier(const CanMessage_t& msg,
                                         uint8_t* buffer,
                                         uint16_t& pos) {
-    // Аналог setDatagramIdentifer + setFormatedDatagramIdentifer
-    char id_str[10] = {0};
-
     if (msg.header.IDE == CAN_ID_EXT) {
     	setFormatedDatagramIdentifer(msg.header.ExtId, buffer, &pos, 9);
     } else if (msg.header.IDE == CAN_ID_STD) {
@@ -198,7 +195,7 @@ uint16_t ProtocolFormatter::asciiFormat(const CanMessage_t& msg,
 
     // 3. Идентификатор
     if (msg.header.IDE == CAN_ID_STD) {
-        pos += snprintf(buf + pos, buffer_size - pos, "0x%03X ",
+        pos += snprintf(buf + pos, buffer_size - pos, "0x%03lX ",
                        msg.header.StdId);
     } else {
         pos += snprintf(buf + pos, buffer_size - pos, "0x%08lX ",
@@ -206,13 +203,13 @@ uint16_t ProtocolFormatter::asciiFormat(const CanMessage_t& msg,
     }
 
     // 4. DLC
-    pos += snprintf(buf + pos, buffer_size - pos, "DLC:%d ",
+    pos += snprintf(buf + pos, buffer_size - pos, "DLC:%lX ",
                    msg.header.DLC);
 
     // 5. Данные (если есть)
     if (msg.header.RTR == CAN_RTR_DATA && msg.header.DLC > 0) {
         pos += snprintf(buf + pos, buffer_size - pos, "DATA:");
-        for (int i = 0; i < msg.header.DLC; i++) {
+        for (uint32_t i = 0; i < msg.header.DLC; i++) {
             pos += snprintf(buf + pos, buffer_size - pos, "%02X", msg.data[i]);
             if (i < msg.header.DLC - 1) {
                 pos += snprintf(buf + pos, buffer_size - pos, " ");

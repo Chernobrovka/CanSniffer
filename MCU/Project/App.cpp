@@ -83,6 +83,11 @@ System::System(){
 
 	led = new Led(LED_CAN_GPIO_Port, LED_CAN_Pin, LED_USB_GPIO_Port, LED_USB_Pin);
 
+	usb_buffer_manager = new UsbBufferManager(&this->usb_busy);
+    usb_buffer_manager->setFlushTimeout(500);
+    usb_buffer_manager->setMaxPacketSize(64);
+
+
 	CanDriver::Status can_status;
 
 	can_driver = new CanDriver(&hcan1, &can_msg_queue);
@@ -105,6 +110,8 @@ System::System(){
 void System::loop(){
 	uint32_t current_time = HAL_GetTick();
 
+	can_processor->processMessage();
+
 	if (bus_monitor && state.timer_100ms_ready){
 		bus_monitor->update(current_time);
 		state.timer_100ms_ready = false;
@@ -116,7 +123,7 @@ void System::loop(){
 
 	command_processor->processCommand();
 
-	can_processor->processMessage();
+	usb_buffer_manager->update();
 }
 
 void System::timersInit(){
@@ -128,114 +135,92 @@ void System::timersInit(){
 }
 
 void usbSendCallback(CanMessage_t& msg, uint32_t data_size){
-    char buffer[256];
-    int len = 0;
+    char buffer[48];
+    char* ptr = buffer;
 
-    // Очищаем буфер
-    memset(buffer, 0, sizeof(buffer));
+    uint32_t seconds = msg.timestamp_ms / 1000; // === 1. ВРЕМЯ: 3 цифры + '.' + 3 цифры ===
+    uint32_t milliseconds = msg.timestamp_ms % 1000;
 
-    const char* color_start = "";
-    const char* color_end = "";
+    *ptr++ = '0' + (seconds / 100); // Секунды: всегда 3 цифры
+    *ptr++ = '0' + ((seconds / 10) % 10);
+    *ptr++ = '0' + (seconds % 10);
+    *ptr++ = '.';
 
-	if (msg.header.RTR == CAN_RTR_REMOTE)
-		color_start = COLOR_YELLOW;  // RTR запросы - желтые
-	else if (msg.header.IDE == CAN_ID_STD)
-		color_start = COLOR_GREEN;   // Стандартные ID - зеленые
-	else
-		color_start = COLOR_CYAN;    // Расширенные ID - голубые
+    *ptr++ = '0' + (milliseconds / 100);     // Миллисекунды: всегда 3 цифры
+    *ptr++ = '0' + ((milliseconds / 10) % 10);
+    *ptr++ = '0' + (milliseconds % 10);
+    *ptr++ = ' ';
 
-	color_end = COLOR_RESET;
 
-    switch (sys->state.parsing) {
-        case false: {
-			len = snprintf(buffer, sizeof(buffer), "%s%08lu%s ", color_start, msg.timestamp_ms, color_end);
+    if (msg.header.RTR == CAN_RTR_REMOTE) { // === 2. ТИП ФРЕЙМА (R для remote) ===
+        *ptr++ = 'R';
+        *ptr++ = ' ';
+    }
 
-            len += snprintf(buffer + len, sizeof(buffer) - len,
-                          "%s%c%s %03lX [%d] ",
-                          color_start,
-                          (msg.header.RTR == CAN_RTR_REMOTE) ? 'R' : 'T',
-                          color_end,
-                          (msg.header.IDE == CAN_ID_STD) ? msg.header.StdId : msg.header.ExtId,
-                          msg.header.DLC);
+    if (msg.header.IDE == CAN_ID_STD) {
+        uint32_t id = msg.header.StdId;
+        *ptr++ = hexdigit_upper[(id >> 8) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 4) & 0xF];
+        *ptr++ = hexdigit_upper[id & 0xF];
+    } else {
+        uint32_t id = msg.header.ExtId;
+        *ptr++ = hexdigit_upper[(id >> 28) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 24) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 20) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 16) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 12) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 8) & 0xF];
+        *ptr++ = hexdigit_upper[(id >> 4) & 0xF];
+        *ptr++ = hexdigit_upper[id & 0xF];
+    }
+    *ptr++ = ' ';
 
-            for (uint8_t i = 0; i < msg.header.DLC; i++) {
-                len += snprintf(buffer + len, sizeof(buffer) - len,
-                              "%02X ", msg.data[i]);
-            }
 
-            for (uint8_t i = msg.header.DLC; i < 8; i++) {
-                len += snprintf(buffer + len, sizeof(buffer) - len, "   ");
-            }
+    *ptr++ = '0' + msg.header.DLC; // === 4. DLC ===
+    *ptr++ = ' ';
 
-            len += snprintf(buffer + len, sizeof(buffer) - len, "\r\n");
-            break;
-        }
-
-        case true: {
-            len = snprintf(buffer, sizeof(buffer),
-                          "\r\n%s=== CAN Message ===%s\r\n"
-                          "Timestamp: %lu ms\r\n"
-                          "ID:        %s0x%08lX%s (%s, %s)\r\n"
-                          "DLC:       %d bytes\r\n"
-                          "Data:      ",
-                          color_start, color_end,
-                          msg.timestamp_ms,
-                          color_start,
-                          (msg.header.IDE == CAN_ID_STD) ? msg.header.StdId : msg.header.ExtId,
-                          color_end,
-                          (msg.header.IDE == CAN_ID_STD) ? "STD" : "EXT",
-                          (msg.header.RTR == CAN_RTR_REMOTE) ? "RTR" : "DATA",
-                          msg.header.DLC);
-
-            for (uint8_t i = 0; i < msg.header.DLC; i++) {
-                len += snprintf(buffer + len, sizeof(buffer) - len,
-                              "%02X ", msg.data[i]);
-            }
-
-            len += snprintf(buffer + len, sizeof(buffer) - len,
-                          "\r\nASCII:    \"");
-
-            for (uint8_t i = 0; i < msg.header.DLC; i++) {
-                char c = msg.data[i];
-                if (c >= 32 && c <= 126) {
-                    len += snprintf(buffer + len, sizeof(buffer) - len, "%c", c);
-                } else {
-                    len += snprintf(buffer + len, sizeof(buffer) - len, ".");
-                }
-            }
-
-            len += snprintf(buffer + len, sizeof(buffer) - len, "\"\r\n");
-            break;
+    // === 5. ДАННЫЕ ===
+    if (msg.header.RTR == CAN_RTR_DATA) {
+        for (uint8_t i = 0; i < msg.header.DLC; i++) {
+            *ptr++ = hexdigit_upper[(msg.data[i] >> 4) & 0xF];
+            *ptr++ = hexdigit_upper[msg.data[i] & 0xF];
         }
     }
 
-    // Отправляем через USB CDC
-    if (len > 0 && len < (int)sizeof(buffer)) {
-        CDC_Transmit_FS((uint8_t*)buffer, len);
+    *ptr++ = '\r'; // === 6. ЗАВЕРШЕНИЕ ===
+    *ptr++ = '\n';
+
+    uint16_t len = ptr - buffer;
+    if (len > 0 && len <= sizeof(buffer)) {
+        sys->usb_buffer_manager->sendData(buffer, len);
     }
 }
 
 static void canStartCallback(void){
 	if (sys->can_driver->activateNotification() != CanDriver::Status::OK){
 		sys->led->indicateError(true);
+		usbPrint("ERROR: Failed to start CAN interface\r\n");
+		return ;
 	}
 	sys->snifferAtivityStatus = System::SNIFFER_ACTIVE;
 	sys->led->indicateCanStarted(true);
+    usbPrint("OK: CAN interface started successfully\r\n");
 }
 
 static void canStopCallback(void){
 	if (sys->can_driver->deactivateNotification() != CanDriver::Status::OK) {
 		sys->led->indicateError(true);
+        usbPrint("ERROR: Failed to stop CAN interface\r\n");
+        return;
 	}
 	sys->snifferAtivityStatus = System::SNIFFER_STOPPED;
 	sys->led->indicateCanStarted(false);
+    usbPrint("OK: CAN interface stopped\r\n");
 }
 
 static void canInfoCallback(void){
-	// TODO: добавить класс со вссеми состояниями сниффера
-
 	sys->led->flashOnCommand();
-	char buffer[2048];
+	char buffer[512];
 	int len = 0;
 
     memset(buffer, 0, sizeof(buffer));
@@ -287,12 +272,13 @@ static void canInfoCallback(void){
                    "  MCU:           STM32F407VET6\r\n"
                    "  Clock:         64 MHz\r\n"
                    "  Memory:        128 kB RAM, 512 kB Flash\r\n"
-                   "  Version:       1.0.0\r\n"
-                   "  Build date:    12.01.2026\r\n");
+                   "  Version:       1.2.0\r\n"
+                   "  Build date:    12.02.2026\r\n");
 
     len += snprintf(buffer + len, sizeof(buffer) - len,
                    "========================================\r\n\r\n");
 
+    sys->usb_busy = true;
 	CDC_Transmit_FS((uint8_t*)buffer, len);
 }
 
@@ -334,7 +320,6 @@ static void writeCallback(uint32_t id, uint8_t* data, uint8_t dlc){
 	bool is_remote = false;
 
 	sys->led->flashOnTx();
-
 	sys->can_driver->sendMessage(id, is_extended, is_remote, data, dlc);
 }
 
@@ -434,31 +419,26 @@ static void disableAllFiltersCallback(){
 static void usbPrint(const char* format, ...){
     static char buffer[256];
     va_list args;
+    uint32_t timeout;
 
     va_start(args, format);
     int len = vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
 
-    if (len > 0) {
-        CDC_Transmit_FS((uint8_t*)buffer, (uint16_t)len);
+    timeout = HAL_GetTick() + 50000;
+    while (sys->usb_busy && (HAL_GetTick() < timeout)) {
+        HAL_Delay(1);
     }
-}
 
-void System::substr(char *str, char *sub, int start, int len) {
-	memcpy(sub, &str[start], len);
-	sub[len] = '\0';
-}
+    if (sys->usb_busy) {
+        return;
+    }
 
-int System::toInteger(uint8_t *stringToConvert, int len) {
-	int counter = len - 1;
-	int exp = 1;
-	int value = 0;
-	while (counter >= 0) {
-		value = value + (stringToConvert[counter] - '0') * exp;
-		exp = exp * 10;
-		counter--;
-	}
-	return value;
+    if (len > 0 && len < (int)sizeof(buffer)) {
+        //sys->usb_busy = true; // Устанавливаем флаг занятости
+        //CDC_Transmit_FS((uint8_t*)buffer, (uint16_t)len);
+        sys->usb_buffer_manager->sendData((uint8_t*)buffer, (uint16_t)len);
+    }
 }
 
 static void debugPrintInternal(const char* format, ...){

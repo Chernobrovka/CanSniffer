@@ -113,16 +113,15 @@ uint32_t CanBusLoadCalculator::calculateBitsInFrame(bool is_extended, uint8_t dl
     // Identifier
     if (is_extended) {
         base_bits += 29;  // Extended ID
-        base_bits += 1;   // IDE bit (часть Extended ID)
+        base_bits += 1;   // SRR
+        base_bits += 1;   // IDE
+        base_bits += 1;   // RTR
     } else {
         base_bits += 11;  // Standard ID
+        base_bits += 1;   // RTR (0 для data, 1 для remote)
+        base_bits += 1;   // IDE = 0 (доминантный)
     }
 
-    // Дополнительные биты
-    base_bits += 1;  // RTR
-    if (!is_extended) {
-        base_bits += 1;  // IDE bit для STD (всегда 0)
-    }
     base_bits += 1;  // r0 (reserved)
     base_bits += 4;  // DLC
 
@@ -135,7 +134,9 @@ uint32_t CanBusLoadCalculator::calculateBitsInFrame(bool is_extended, uint8_t dl
     // Остальные биты
     uint32_t footer_bits = 15 + 1 + 1 + 1 + 7 + 3;  // CRC(15) + CRC_Delim(1) + ACK(1) + ACK_Delim(1) + EOF(7) + IFS(3)
 
-    return base_bits + data_bits + footer_bits;
+
+    return ((base_bits + data_bits + footer_bits) * STUFFING_FACTOR_PERCENT) / 100;
+    //return base_bits + data_bits + footer_bits;
 }
 
 float CanBusLoadCalculator::calculateLoadPercentage(uint32_t total_bits, uint32_t time_window_ms, uint32_t baudrate) {
