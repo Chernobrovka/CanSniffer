@@ -15,6 +15,7 @@ UsbBufferManager::UsbBufferManager(bool *usb_busy_ptr)
     , total_flushes_(0)
     , last_message_time_us_(0)
     , last_flush_time_us_(0)
+	, usb_transfer_start_time_us_(0)
     , usb_busy_(usb_busy_ptr ? usb_busy_ptr : []() {
         static bool default_busy = false;
         return &default_busy;
@@ -37,6 +38,20 @@ UsbBufferManager::UsbBufferManager(bool *usb_busy_ptr)
 UsbBufferManager::~UsbBufferManager() {
     flush(true); // Отправляем все оставшиеся сообщения
     q_kill(&queue_);
+}
+
+bool UsbBufferManager::isUsbStuck() const {
+    if (*usb_busy_ && usb_transfer_start_time_us_ > 0) {
+        uint32_t now = getCurrentMicroseconds();
+        uint32_t elapsed = now - usb_transfer_start_time_us_;
+
+        if (now < usb_transfer_start_time_us_) {
+            return false;
+        }
+
+        return elapsed >= USB_TRANSFER_TIMEOUT_US;
+    }
+    return false;
 }
 
 uint32_t UsbBufferManager::getCurrentMicroseconds() const {
@@ -126,6 +141,7 @@ void UsbBufferManager::sendPacket(const uint8_t* data, size_t length) {
     if (CDC_Transmit_FS(const_cast<uint8_t*>(data), length) == USBD_OK) {
         if (usb_busy_) {
             *usb_busy_ = true;
+            usb_transfer_start_time_us_ = getCurrentMicroseconds();
         }
         total_sent_ += length;
     }
@@ -153,6 +169,14 @@ void UsbBufferManager::flush(bool force) {
 }
 
 void UsbBufferManager::update() {
+    if (isUsbStuck()) {
+        *usb_busy_ = false;
+        usb_transfer_start_time_us_ = 0;
+
+        static uint32_t timeout_recovery_count = 0;
+        timeout_recovery_count++;
+    }
+
     if (shouldFlush()) {
         flush_pending_ = true;
     }

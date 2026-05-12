@@ -227,7 +227,7 @@ CanDriver::Status CanDriver::setFilterStandardIDWithMask(uint8_t filter_bank, ui
 
     sFilterConfig.FilterBank = filter_bank;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;//CAN_FILTERSCALE_16BIT;
     sFilterConfig.FilterIdHigh = (id & 0x7FF) << 5;
     sFilterConfig.FilterIdLow = 0x0000;
     sFilterConfig.FilterMaskIdHigh = (mask & 0x7FF) << 5;

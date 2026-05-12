@@ -68,8 +68,8 @@ public:
     };
 
     // Конфигурация
-    static constexpr size_t MAX_FILTERS = 28;      // Максимум фильтров (14 банков × 2)
-    static constexpr size_t MAX_BANKS = 14;        // Для STM32F1xx
+    static constexpr size_t MAX_FILTERS = 14;      // Максимум фильтров (14 банков)
+    static constexpr size_t MAX_BANKS = 14;        // Для STM32F4xx
     static constexpr uint32_t STD_MASK_DEFAULT = 0x7FF;      // Маска по умолчанию для STD
     static constexpr uint32_t EXT_MASK_DEFAULT = 0x1FFFFFFF; // Маска по умолчанию для EXT
 
@@ -106,24 +106,14 @@ public:
 
 private:
     struct Bank {
-        FilterInfo filters[2];  // 2 фильтра в 16-битном режиме
+        FilterInfo filter;
         bool is_used;
-        uint8_t used_slots;
 
-        Bank() : is_used(false), used_slots(0) {
-            filters[0] = FilterInfo{};
-            filters[1] = FilterInfo{};
+        Bank() : is_used(false) {
+            filter = FilterInfo{};
         }
 
-        bool hasFreeSlot() const { return used_slots < 2; }
-        uint8_t getFreeSlot() const {
-            for (uint8_t i = 0; i < 2; i++) {
-                if (filters[i].status != FilterStatus::ACTIVE) {
-                    return i;
-                }
-            }
-            return 2;  // Нет свободных слотов
-        }
+        bool isFree() const { return !is_used; }
     };
 
     Bank banks_[MAX_BANKS];

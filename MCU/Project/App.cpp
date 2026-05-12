@@ -220,7 +220,7 @@ static void canStopCallback(void){
 
 static void canInfoCallback(void){
 	sys->led->flashOnCommand();
-	char buffer[512];
+	char buffer[2048];
 	int len = 0;
 
     memset(buffer, 0, sizeof(buffer));
@@ -277,6 +277,11 @@ static void canInfoCallback(void){
 
     len += snprintf(buffer + len, sizeof(buffer) - len,
                    "========================================\r\n\r\n");
+
+    uint32_t timeout = HAL_GetTick() + 5000;
+    while (sys->usb_busy && (HAL_GetTick() < timeout)) {
+        HAL_Delay(1);
+    }
 
     sys->usb_busy = true;
 	CDC_Transmit_FS((uint8_t*)buffer, len);
@@ -436,8 +441,8 @@ static void usbPrint(const char* format, ...){
 
     if (len > 0 && len < (int)sizeof(buffer)) {
         //sys->usb_busy = true; // Устанавливаем флаг занятости
-        //CDC_Transmit_FS((uint8_t*)buffer, (uint16_t)len);
-        sys->usb_buffer_manager->sendData((uint8_t*)buffer, (uint16_t)len);
+        CDC_Transmit_FS((uint8_t*)buffer, (uint16_t)len);
+        //sys->usb_buffer_manager->sendData((uint8_t*)buffer, (uint16_t)len);
     }
 }
 

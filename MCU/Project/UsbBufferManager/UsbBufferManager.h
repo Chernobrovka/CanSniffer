@@ -71,6 +71,7 @@ public:
 
 private:
     void sendPacket(const uint8_t* data, size_t length);
+    bool isUsbStuck() const;
     uint32_t getCurrentMicroseconds() const;
     bool shouldFlush() const;
     size_t preparePacketFromQueue(uint8_t* buffer, size_t max_len);
@@ -93,6 +94,9 @@ private:
 
     size_t max_packet_size_;
     uint32_t flush_timeout_us_;
+
+    uint32_t usb_transfer_start_time_us_;  // Время начала последней USB передачи
+    static constexpr uint32_t USB_TRANSFER_TIMEOUT_US = 1000;
 
     static constexpr size_t FORMAT_BUFFER_SIZE = 256;
     char format_buffer_[FORMAT_BUFFER_SIZE];

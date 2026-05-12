@@ -380,26 +380,28 @@ CommandHandler::Result CommandHandler::parseFilterAdd(char tokens[][TOKEN_SIZE],
 CommandHandler::Result CommandHandler::parseWrite(char tokens[][TOKEN_SIZE], int token_count, Command* cmd) {
     cmd->type = CMD_WRITE;
 
-    if (token_count < 3) {
+    if (token_count < 2) {
         return Result::InvalidCommand;
     }
 
-    // Парсим ID (первый токен после "write")
-    cmd->params.write.id = parseHex(tokens[1]);
-
-    // Объединяем оставшиеся токены для данных
-    char data_str[64] = {0};
-    for (int i = 2; i < token_count; i++) {
-        if (i > 2) strcat(data_str, " ");
-        strcat(data_str, tokens[i]);
-    }
-
-    if (!parseDataBytes(data_str, cmd->params.write.data, &cmd->params.write.dlc)) {
-        return Result::ParseError;
-    }
-
+    uint32_t id = parseHex(tokens[1]);
+    cmd->params.write.id = id;
+    cmd->params.write.dlc = 0;
+    memset(cmd->params.write.data, 0, 8);
     cmd->params.write.count = 1;
     cmd->params.write.interval_ms = 0;
+
+    if (token_count >= 3) {
+        char data_str[64] = {0};
+        for (int i = 2; i < token_count; i++) {
+            if (i > 2) strcat(data_str, " ");
+            strcat(data_str, tokens[i]);
+        }
+
+        if (!parseDataBytes(data_str, cmd->params.write.data, &cmd->params.write.dlc)) {
+            return Result::ParseError;
+        }
+    }
 
     return Result::OK;
 }

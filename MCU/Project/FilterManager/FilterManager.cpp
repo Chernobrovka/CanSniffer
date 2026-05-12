@@ -19,8 +19,7 @@ FilterManager::FilterManager(PrintCallback print_cb,
 	  disable_all_filters_callback_(disable_all_filters_cb){
     // Инициализация всех банков
     for (auto& bank : banks_) {
-        bank.is_used = false;
-        bank.used_slots = 0;
+    	bank.is_used = false;
     }
 }
 
@@ -54,26 +53,22 @@ bool FilterManager::addFilter(uint32_t id, uint32_t mask, FilterType type) {
 
     Bank& bank = banks_[bank_num];
 
-    FilterInfo& filter_info = bank.filters[slot_num];
+    FilterInfo& filter_info = bank.filter;
     filter_info.id = id;
     filter_info.mask = mask;
     filter_info.type = type;
     filter_info.status = FilterStatus::ACTIVE;
     filter_info.bank_number = bank_num;
-    filter_info.filter_index = slot_num;
+    filter_info.filter_index = 0;
 
-    if (!config_filter_callback_(bank_num, slot_num, id, mask, (bool)type)) {
+    if (!config_filter_callback_(bank_num, 0, id, mask, (bool)type)) {
     	print_callback_("ERROR: Failed to configure hardware filter\r\n");
         filter_info.status = FilterStatus::ERROR;
         return false;
     }
 
-    if (!bank.is_used) {
-        bank.is_used = true;
-        used_bank_count_++;
-    }
-
-    bank.used_slots++;
+    bank.is_used = true;
+    used_bank_count_++;
     active_filter_count_++;
 
     print_callback_("OK: Filter added - ID: 0x%08lX, Mask: 0x%08lX, Type: %s, Bank: %d, Slot: %d\r\n",
@@ -90,26 +85,22 @@ bool FilterManager::removeFilter(uint32_t id) {
     }
 
     uint8_t bank_num = slot.bank;
-    uint8_t slot_num = slot.slot;
 
     Bank& bank = banks_[bank_num];
-    FilterInfo& filter_info = bank.filters[slot_num];
+    FilterInfo& filter_info = bank.filter;
 
-    if (!disable_filter_callback_(bank_num, slot_num)) {
+    if (!disable_filter_callback_(bank_num, 0)) {
     	print_callback_("WARNING: Failed to disable hardware filter\r\n");
     }
 
     filter_info.status = FilterStatus::INACTIVE;
-    bank.used_slots--;
+    filter_info.clear();  // Очищаем данные фильтра
+    bank.is_used = false;
+    used_bank_count_--;
     active_filter_count_--;
 
-    if (bank.used_slots == 0) {
-        bank.is_used = false;
-        used_bank_count_--;
-    }
-
-    print_callback_("OK: Filter removed - ID: 0x%08lX, Bank: %d, Slot: %d\r\n",
-           id, bank_num, slot_num);
+    print_callback_("OK: Filter removed - ID: 0x%08lX, Bank: %d\r\n",
+           id, bank_num);
 
     return true;
 }
@@ -121,11 +112,7 @@ void FilterManager::removeAllFilters() {
 
     for (auto& bank : banks_) {
         bank.is_used = false;
-        bank.used_slots = 0;
-
-        for (auto& filter : bank.filters) {
-            filter.status = FilterStatus::INACTIVE;
-        }
+        bank.filter.clear();
     }
 
     active_filter_count_ = 0;
@@ -137,7 +124,7 @@ void FilterManager::removeAllFilters() {
 const FilterManager::FilterInfo* FilterManager::findFilter(uint32_t id) const {
     FilterSlot slot = findFilterSlot(id);
     if (slot.isValid()) {
-        return &banks_[slot.bank].filters[slot.slot];
+        return &banks_[slot.bank].filter;
     }
     return nullptr;
 }
@@ -155,10 +142,8 @@ size_t FilterManager::getActiveFilters(FilterInfo* buffer, size_t buffer_size) c
     for (const auto& bank : banks_) {
         if (!bank.is_used) continue;
 
-        for (const auto& filter : bank.filters) {
-            if (filter.status == FilterStatus::ACTIVE && count < buffer_size) {
-                buffer[count++] = filter;
-            }
+        if (bank.filter.status == FilterStatus::ACTIVE && count < buffer_size) {
+            buffer[count++] = bank.filter;
         }
     }
 
@@ -182,17 +167,15 @@ void FilterManager::printFilterList() const {
         for (const auto& bank : banks_) {
             if (!bank.is_used) continue;
 
-            for (const auto& filter : bank.filters) {
-                if (filter.status == FilterStatus::ACTIVE) {
-                	print_callback_("%-2zu %-4d %-4d 0x%08lX 0x%08lX %-4s %-6s\r\n",
-                           index++,
-                           filter.bank_number,
-                           filter.filter_index,
-                           filter.id,
-                           filter.mask,
-                           filterTypeToString(filter.type),
-                           filterStatusToString(filter.status));
-                }
+            const auto& filter = bank.filter;
+            if (filter.status == FilterStatus::ACTIVE) {
+            	print_callback_("%-2zu %-4d 0x%08lX 0x%08lX %-4s %-6s\r\n",
+                       index++,
+                       filter.bank_number,
+                       filter.id,
+                       filter.mask,
+                       filterTypeToString(filter.type),
+                       filterStatusToString(filter.status));
             }
         }
     }
@@ -252,24 +235,9 @@ bool FilterManager::isValidMask(uint32_t mask, FilterType type) {
 // Private methods
 
 FilterManager::FilterSlot FilterManager::findFreeSlot() {
-    // Сначала ищем банк с одним свободным слотом
     for (uint8_t bank_num = 0; bank_num < MAX_BANKS; bank_num++) {
-        Bank& bank = banks_[bank_num];
-
-        if (bank.is_used && bank.hasFreeSlot()) {
-            uint8_t slot = bank.getFreeSlot();
-            if (slot < 2) {
-                return FilterSlot(bank_num, slot);
-            }
-        }
-    }
-
-    // Если нет, ищем полностью свободный банк
-    for (uint8_t bank_num = 0; bank_num < MAX_BANKS; bank_num++) {
-        Bank& bank = banks_[bank_num];
-
-        if (!bank.is_used) {
-            return FilterSlot(bank_num, 0);  // Первый слот свободного банка
+        if (!banks_[bank_num].is_used) {
+            return FilterSlot(bank_num, 0);  // Слот всегда 0
         }
     }
 
@@ -282,11 +250,9 @@ FilterManager::FilterSlot FilterManager::findFilterSlot(uint32_t id) const {
 
         if (!bank.is_used) continue;
 
-        for (uint8_t slot = 0; slot < 2; slot++) {
-            if (bank.filters[slot].status == FilterStatus::ACTIVE &&
-                bank.filters[slot].id == id) {
-                return FilterSlot(bank_num, slot);
-            }
+        if (bank.filter.status == FilterStatus::ACTIVE &&
+            bank.filter.id == id) {
+            return FilterSlot(bank_num, 0);  // Слот всегда 0
         }
     }
 
